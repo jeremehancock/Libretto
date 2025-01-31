@@ -1,0 +1,5 @@
+requests>=2.31.0
+urllib3>=2.0.7
+colorama>=0.4.6
+pathlib>=1.0.1
+typing>=3.7.4
