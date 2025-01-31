@@ -29,15 +29,17 @@
 # SOFTWARE.
 
 import os
+import re
 import sys
 import argparse
 import logging
 import csv
 import html
 import time
-import fcntl
 import signal
 import unicodedata
+import tempfile
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
@@ -48,10 +50,72 @@ import xml.etree.ElementTree as ET
 from colorama import init, Fore, Back, Style
 
 # Initialize
-init()
+init(autoreset=True)
+
+class CrossPlatformLock:
+    """A cross-platform file locking mechanism."""
+    
+    def __init__(self, lock_file):
+        self.lock_file = Path(lock_file)
+        self.lock_file_handle = None
+        self._lock = threading.Lock()
+    
+    def acquire(self):
+        """Acquire a lock. Returns True if successful, False if already locked."""
+        with self._lock:
+            if self.lock_file.exists():
+                try:
+                    # Check if the process ID in the lock file still exists
+                    with open(self.lock_file, 'r') as f:
+                        pid = int(f.read().strip())
+                    
+                    # Check if the process is still running
+                    if self._is_process_running(pid):
+                        return False
+                    
+                    # Process is not running, remove stale lock
+                    self.lock_file.unlink()
+                except (ValueError, OSError):
+                    # Invalid PID or file access error, remove lock file
+                    self.lock_file.unlink(missing_ok=True)
+            
+            try:
+                # Create lock file with current process ID
+                self.lock_file_handle = open(self.lock_file, 'w')
+                self.lock_file_handle.write(str(os.getpid()))
+                self.lock_file_handle.flush()
+                return True
+            except OSError:
+                return False
+    
+    def release(self):
+        """Release the lock."""
+        with self._lock:
+            if self.lock_file_handle:
+                self.lock_file_handle.close()
+                self.lock_file_handle = None
+            self.lock_file.unlink(missing_ok=True)
+    
+    def _is_process_running(self, pid):
+        """Check if a process with given PID is running."""
+        try:
+            if sys.platform == "win32":
+                # Windows
+                from ctypes import windll
+                handle = windll.kernel32.OpenProcess(1, False, pid)
+                if handle == 0:
+                    return False
+                windll.kernel32.CloseHandle(handle)
+                return True
+            else:
+                # Unix-like systems (Linux, macOS)
+                os.kill(pid, 0)
+                return True
+        except (OSError, AttributeError):
+            return False
 
 class PlexLibraryExporter:
-    SCRIPT_VERSION = "1.0.2"
+    SCRIPT_VERSION = "1.0.3"
     DEFAULT_PLEX_URL = "http://localhost:32400"
     DEFAULT_OUTPUT_DIR = "exports"
     PAGE_SIZE = 50
@@ -67,7 +131,8 @@ class PlexLibraryExporter:
         # Setup directories
         self.log_dir = Path("logs")
         self.config_dir = Path("config")
-        self.lock_file = Path("/tmp/libretto.lock")
+        self.lock_file = Path(tempfile.gettempdir()) / "libretto.lock"
+        self.lock = CrossPlatformLock(self.lock_file)
         
         # Setup logging
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -148,22 +213,14 @@ class PlexLibraryExporter:
         )
 
     def create_lock(self):
-        try:
-            fd = os.open(str(self.lock_file), os.O_WRONLY | os.O_CREAT | os.O_EXCL)
-            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            os.write(fd, str(os.getpid()).encode())
-            return fd
-        except (IOError, OSError):
+        """Create a cross-platform lock."""
+        if not self.lock.acquire():
             print(f"{Fore.RED}Error: Another instance is running{Style.RESET_ALL}", file=sys.stderr)
             sys.exit(4)
 
-    def remove_lock(self, fd):
-        try:
-            fcntl.flock(fd, fcntl.LOCK_UN)
-            os.close(fd)
-            self.lock_file.unlink(missing_ok=True)
-        except (IOError, OSError):
-            pass
+    def remove_lock(self, _):
+        """Remove the cross-platform lock."""
+        self.lock.release()
 
     def get_libraries(self) -> List[Dict]:
         root = self._make_request("/library/sections")
@@ -212,9 +269,55 @@ class PlexLibraryExporter:
             i += 1
         return f"{size_bytes:.1f}{units[i]}"
 
+    def _get_movie_metadata(self, rating_key: str) -> Optional[str]:
+        """Get full metadata for a specific movie including TMDB ID."""
+        try:
+            metadata = self._make_request(f"/library/metadata/{rating_key}")
+            if self.debug:
+                video = metadata.find('.//Video')
+                if video is not None:
+                    print(f"\nDEBUG: Full metadata for movie {rating_key}:")
+                    for guid in video.findall('.//Guid'):
+                        print(f"Found Guid: {guid.get('id')}")
+            
+            # Look for TMDB ID in Guid elements
+            for guid in metadata.findall('.//Guid'):
+                guid_id = guid.get('id', '')
+                if 'tmdb://' in guid_id:
+                    return guid_id.split('tmdb://')[-1]
+            return ""
+            
+        except Exception as e:
+            if self.debug:
+                print(f"{Fore.YELLOW}Warning: Failed to get metadata for movie {rating_key}: {str(e)}{Style.RESET_ALL}")
+            return ""
+
+    def _get_show_metadata(self, rating_key: str) -> Optional[str]:
+        """Get full metadata for a specific TV show including TMDB ID."""
+        try:
+            metadata = self._make_request(f"/library/metadata/{rating_key}")
+            if self.debug:
+                show = metadata.find('.//Directory')
+                if show is not None:
+                    print(f"\nDEBUG: Full metadata for show {rating_key}:")
+                    for guid in show.findall('.//Guid'):
+                        print(f"Found Guid: {guid.get('id')}")
+            
+            # Look for TMDB ID in Guid elements
+            for guid in metadata.findall('.//Guid'):
+                guid_id = guid.get('id', '')
+                if 'tmdb://' in guid_id:
+                    return guid_id.split('tmdb://')[-1]
+            return ""
+            
+        except Exception as e:
+            if self.debug:
+                print(f"{Fore.YELLOW}Warning: Failed to get metadata for show {rating_key}: {str(e)}{Style.RESET_ALL}")
+            return ""
+
     def export_movie_library(self, library_id: str, output_file: Path) -> Tuple[bool, int]:
         headers = [
-            'title', 'year', 'duration', 'studio', 'content_rating', 'summary',
+            'title', 'year', 'tmdb_id', 'duration', 'studio', 'content_rating', 'summary',
             'rating', 'audience_rating', 'tagline', 'originally_available_at',
             'added_at', 'updated_at', 'video_resolution', 'audio_channels',
             'audio_codec', 'video_codec', 'container', 'video_frame_rate',
@@ -234,10 +337,12 @@ class PlexLibraryExporter:
                     print(f"\r{Fore.CYAN}Exporting movies: {i}/{total_items} ({(i/total_items)*100:.1f}%){Style.RESET_ALL}", 
                           end='', file=sys.stderr)
                 
+                rating_key = video.get('ratingKey')
+                tmdb_id = self._get_movie_metadata(rating_key) if rating_key else ""
+                
                 media = video.find('.//Media')
                 part = video.find('.//Media/Part')
                 
-                # Process ratings
                 rating = video.get('rating')
                 if rating:
                     rating = f"{float(rating) * 10:.0f}%"
@@ -246,7 +351,6 @@ class PlexLibraryExporter:
                 if audience_rating:
                     audience_rating = f"{float(audience_rating) * 10:.0f}%"
                 
-                # Get all tags with proper joining
                 genres = ' , '.join(g.get('tag', '') for g in video.findall('.//Genre'))
                 countries = ' , '.join(c.get('tag', '') for c in video.findall('.//Country'))
                 directors = ' , '.join(d.get('tag', '') for d in video.findall('.//Director'))
@@ -256,6 +360,7 @@ class PlexLibraryExporter:
                 row = [
                     self.process_text_field(video.get('title')),
                     video.get('year', ''),
+                    tmdb_id,
                     str(int(video.get('duration', 0)) // 60000),
                     self.process_text_field(video.get('studio')),
                     video.get('contentRating', ''),
@@ -281,6 +386,8 @@ class PlexLibraryExporter:
                 ]
                 writer.writerow(row)
                 items_exported += 1
+                
+                time.sleep(0.1)
             
             if not self.quiet:
                 print(f"\n{Fore.GREEN}Exported {items_exported} movies{Style.RESET_ALL}")
@@ -289,7 +396,7 @@ class PlexLibraryExporter:
 
     def export_tv_library(self, library_id: str, output_file: Path) -> Tuple[bool, int]:
         headers = [
-            'series_title', 'total_episodes', 'seasons', 'studio', 'content_rating',
+            'series_title', 'tmdb_id', 'total_episodes', 'seasons', 'studio', 'content_rating',
             'summary', 'audience_rating', 'year', 'duration', 'originally_available_at',
             'added_at', 'updated_at', 'genres', 'countries', 'actors'
         ]
@@ -307,18 +414,20 @@ class PlexLibraryExporter:
                     print(f"\r{Fore.CYAN}Exporting TV shows: {i}/{total_items} ({(i/total_items)*100:.1f}%){Style.RESET_ALL}", 
                           end='', file=sys.stderr)
                 
-                # Process audience rating
+                rating_key = show.get('ratingKey')
+                tmdb_id = self._get_show_metadata(rating_key) if rating_key else ""
+                
                 audience_rating = show.get('audienceRating')
                 if audience_rating:
                     audience_rating = f"{float(audience_rating) * 10:.0f}%"
                 
-                # Get all tags with proper joining
                 genres = ' , '.join(g.get('tag', '') for g in show.findall('.//Genre'))
                 countries = ' , '.join(c.get('tag', '') for c in show.findall('.//Country'))
                 actors = ' , '.join(a.get('tag', '') for a in show.findall('.//Role'))
                 
                 row = [
                     self.process_text_field(show.get('title')),
+                    tmdb_id,
                     show.get('leafCount', '0'),
                     show.get('childCount', '0'),
                     self.process_text_field(show.get('studio')),
@@ -336,6 +445,8 @@ class PlexLibraryExporter:
                 ]
                 writer.writerow(row)
                 items_exported += 1
+                
+                time.sleep(0.1)
             
             if not self.quiet:
                 print(f"\n{Fore.GREEN}Exported {items_exported} TV shows{Style.RESET_ALL}")

@@ -24,8 +24,6 @@ Libretto is a powerful Python tool that exports detailed information from your P
 requests
 urllib3
 colorama
-pathlib
-typing
 ```
 
 ## Installation
@@ -43,11 +41,6 @@ cd Libretto
 3. Install required packages:
 ```bash
 pip install -r requirements.txt
-```
-
-4. Make executable:
-```bash
-chmod u+x libretto.py
 ```
 
 ## Configuration
