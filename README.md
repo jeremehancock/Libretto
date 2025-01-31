@@ -45,6 +45,11 @@ cd Libretto
 pip install -r requirements.txt
 ```
 
+4. Make executable:
+```bash
+chmod u+x libretto.py
+```
+
 ## Configuration
 
 Libretto can be configured either through command-line arguments or a configuration file. On first run, a default configuration file will be created at `config/libretto.conf`.
