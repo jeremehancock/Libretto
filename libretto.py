@@ -1,5 +1,33 @@
 #!/usr/bin/env python3
 
+# Libretto: A Plex Library Export Tool
+# Exports movie, TV show, and music libraries from Plex Media Server to CSV format
+#
+# Developed by Jereme Hancock
+# https://github.com/jeremehancock/Libretto
+#
+# MIT License
+#
+# Copyright (c) 2024 Jereme Hancock
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import os
 import sys
 import argparse
@@ -23,7 +51,7 @@ from colorama import init, Fore, Back, Style
 init()
 
 class PlexLibraryExporter:
-    SCRIPT_VERSION = "1.0.1"
+    SCRIPT_VERSION = "1.0.2"
     DEFAULT_PLEX_URL = "http://localhost:32400"
     DEFAULT_OUTPUT_DIR = "exports"
     PAGE_SIZE = 50
