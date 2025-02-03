@@ -6,7 +6,6 @@ Python scripts for bulk importing movies and TV shows into Radarr and Sonarr usi
 
 - Bulk import movies into Radarr from a CSV file
 - Bulk import TV shows into Sonarr from a CSV file
-- Cross-platform compatibility (Windows, macOS, Linux)
 - Python 3.6+ compatibility
 - Progress tracking with color-coded output
 - Detailed import summaries
