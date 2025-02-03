@@ -165,6 +165,10 @@ Libretto includes comprehensive error handling:
 - Malformed responses
 - Concurrent execution prevention
 
+## Importers
+
+Libretto includes imports for Radarr and Sonarr. Check them out [here](https://github.com/jeremehancock/Libretto/tree/main/importers#importer-scripts-for-libretto).
+
 ## License
 
 [MIT License](LICENSE)
