@@ -69,7 +69,7 @@ python sonarr-import.py path/to/shows.csv
 
 ## License
 
-[MIT License](LICENSE)
+[MIT License](https://github.com/jeremehancock/Libretto/blob/main/LICENSE)
 
 ## AI Assistance Disclosure
 
