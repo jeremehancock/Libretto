@@ -172,7 +172,3 @@ Libretto includes comprehensive error handling:
 ## AI Assistance Disclosure
 
 This tool was developed with assistance from AI language models.
-
-## Disclaimer
-
-All code is provided as-is without any warranty.
