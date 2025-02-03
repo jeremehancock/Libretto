@@ -1,6 +1,6 @@
 # Importer Scripts (for Libretto)
 
-Python scripts for bulk importing movies and TV shows into Radarr and Sonarr using CSV files. These scripts work across Windows, macOS, and Linux platforms.
+Python scripts for bulk importing movies and TV shows into Radarr and Sonarr using CSV files.
 
 ## Features
 
