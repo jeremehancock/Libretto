@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <!-- Background -->
+  <rect width="800" height="400" fill="#282a36" rx="20"/>
+  
+  <!-- Plex-inspired media grid (left side) -->
+  <g transform="translate(60,80)">
+    <!-- Movie/TV Show Posters -->
+    <rect x="0" y="0" width="80" height="120" fill="#ff79c6" rx="4"/>
+    <rect x="90" y="0" width="80" height="120" fill="#bd93f9" rx="4"/>
+    <rect x="180" y="0" width="80" height="120" fill="#50fa7b" rx="4"/>
+    <rect x="0" y="130" width="80" height="120" fill="#8be9fd" rx="4"/>
+    <rect x="90" y="130" width="80" height="120" fill="#ffb86c" rx="4"/>
+    <rect x="180" y="130" width="80" height="120" fill="#ff5555" rx="4"/>
+    
+    <!-- Play icons -->
+    <path d="M30,55 L30,75 L50,65 Z" fill="white" opacity="0.9"/>
+    <path d="M120,55 L120,75 L140,65 Z" fill="white" opacity="0.9"/>
+    <path d="M210,55 L210,75 L230,65 Z" fill="white" opacity="0.9"/>
+    <path d="M30,185 L30,205 L50,195 Z" fill="white" opacity="0.9"/>
+    <path d="M120,185 L120,205 L140,195 Z" fill="white" opacity="0.9"/>
+    <path d="M210,185 L210,205 L230,195 Z" fill="white" opacity="0.9"/>
+  </g>
+
+  <!-- Arrow indicating extraction -->
+  <path d="M360,200 L440,200 M420,180 L440,200 L420,220" stroke="#f8f8f2" stroke-width="8" fill="none"/>
+
+  <!-- CSV representation (right side) -->
+  <g transform="translate(480,80)">
+    <!-- CSV header -->
+    <rect x="0" y="0" width="260" height="40" fill="#44475a" rx="4"/>
+    <text x="20" y="25" fill="#f8f8f2" font-family="monospace" font-size="14">Title,Year,Rating,Duration</text>
+    
+    <!-- CSV rows -->
+    <rect x="0" y="50" width="260" height="200" fill="#44475a" rx="4"/>
+    <text x="20" y="80" fill="#f8f8f2" font-family="monospace" font-size="14">Movie 1,2023,8.5,120</text>
+    <text x="20" y="110" fill="#f8f8f2" font-family="monospace" font-size="14">Show 2,2022,9.0,45</text>
+    <text x="20" y="140" fill="#f8f8f2" font-family="monospace" font-size="14">Movie 3,2024,7.8,95</text>
+    <text x="20" y="170" fill="#f8f8f2" font-family="monospace" font-size="14">Show 4,2021,8.9,60</text>
+  </g>
+
+  <!-- Project name -->
+  <text x="400" y="340" fill="#f8f8f2" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle">Libretto</text>
+  <text x="400" y="370" fill="#6272a4" font-family="Arial, sans-serif" font-size="16" text-anchor="middle">Plex Library Metadata Exporter</text>
+</svg>

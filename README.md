@@ -1,5 +1,9 @@
 # Libretto (for Plex)
 
+## Plex Library Metadata Exporter
+
+![Libretto](https://raw.githubusercontent.com/jeremehancock/Libretto/main/images/thumbnails/libretto-thumbnail.png "Libretto")
+
 Libretto is a powerful Python tool that exports detailed information from your Plex Media Server libraries into CSV format. It supports movies, TV shows, and music libraries with rich metadata extraction.
 
 ## Features
