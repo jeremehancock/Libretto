@@ -173,6 +173,12 @@ Libretto includes comprehensive error handling:
 
 Libretto includes imports for Radarr and Sonarr. Check them out [here](https://github.com/jeremehancock/Libretto/tree/main/importers#importer-scripts-for-libretto).
 
+## Note
+
+Libretto needs to be on the same network as your Plex Media Server to run. 
+
+If you want to connect remotely you will need to use something like [Tailscale](https://tailscale.com) to ensure that Libretto can communicate with your Plex Media Server.
+
 ## License
 
 [MIT License](LICENSE)
