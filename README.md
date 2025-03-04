@@ -16,9 +16,9 @@ Libretto is a powerful Python tool that exports detailed information from your P
 - Progress tracking with colorful console output
 - Robust error handling and logging
 
-### If you find this tool useful, consider helping me buy more hard drives!
+## Support this project
 
-[![](https://jereme.dev/images/paypal-donate-button.png)](https://www.paypal.com/ncp/payment/7WSTDKQ4PCNXQ)
+[![Donate](https://raw.githubusercontent.com/jeremehancock/Posteria/main/images/donate-button.png)](https://www.buymeacoffee.com/jereme)
 
 ## Requirements
 
