@@ -18,7 +18,7 @@ Libretto is a powerful Python tool that exports detailed information from your P
 
 ## Support this project
 
-[![Donate](https://raw.githubusercontent.com/jeremehancock/Posteria/main/images/donate-button.png)](https://www.buymeacoffee.com/jereme)
+[![Donate](https://raw.githubusercontent.com/jeremehancock/Posteria/main/images/donate-button.png)](https://www.buymeacoffee.com/jeremehancock)
 
 ## Requirements
 
